@@ -12,7 +12,9 @@ from .serializers import (
     UserUpdateSerializer,
     UserProfileSerializer,
     PasswordChangeSerializer,
-    UserListSerializer
+    UserListSerializer,
+    EmailVerificationSerializer,
+    EmailVerificationConfirmSerializer
 )
 
 
@@ -28,6 +30,14 @@ class UserRegistrationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
+        # 自动发送邮箱验证邮件
+        try:
+            email_serializer = EmailVerificationSerializer(data={'email': user.email})
+            if email_serializer.is_valid():
+                email_serializer.save()
+        except Exception:
+            pass  # 邮件发送失败不影响注册流程
+        
         # 生成JWT令牌
         refresh = RefreshToken.for_user(user)
         
@@ -37,7 +47,7 @@ class UserRegistrationView(generics.CreateAPIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             },
-            'message': '注册成功'
+            'message': '注册成功，验证邮件已发送到您的邮箱'
         }, status=status.HTTP_201_CREATED)
 
 
@@ -200,4 +210,53 @@ def upload_avatar_view(request):
     return Response({
         'avatar_url': user.get_avatar_url(),
         'message': '头像上传成功'
+    })
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def send_verification_email_view(request):
+    """发送邮箱验证邮件"""
+    
+    serializer = EmailVerificationSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    
+    return Response({
+        'message': '验证邮件已发送，请检查您的邮箱'
+    })
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def verify_email_view(request):
+    """验证邮箱"""
+    
+    serializer = EmailVerificationConfirmSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    
+    return Response({
+        'message': '邮箱验证成功',
+        'user': UserSerializer(user).data
+    })
+
+
+@api_view(['POST'])
+def resend_verification_email_view(request):
+    """重新发送验证邮件"""
+    
+    user = request.user
+    if user.email_verified:
+        return Response(
+            {'error': '邮箱已经验证过了'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    serializer = EmailVerificationSerializer(data={'email': user.email})
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    
+    return Response({
+        'message': '验证邮件已重新发送'
     })

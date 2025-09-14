@@ -14,6 +14,11 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     
+    # 邮箱验证
+    path('email/send-verification/', views.send_verification_email_view, name='send_verification_email'),
+    path('email/verify/', views.verify_email_view, name='verify_email'),
+    path('email/resend-verification/', views.resend_verification_email_view, name='resend_verification_email'),
+    
     # JWT令牌
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils.crypto import get_random_string
+from django.utils import timezone
+from datetime import timedelta
 
 
 class User(AbstractUser):
@@ -21,6 +24,7 @@ class User(AbstractUser):
     # 账户状态
     is_verified = models.BooleanField(_('已验证'), default=False)
     is_private = models.BooleanField(_('私密账户'), default=False)
+    email_verified = models.BooleanField(_('邮箱已验证'), default=False)
     
     # 时间戳
     created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
@@ -48,6 +52,17 @@ class User(AbstractUser):
         if self.avatar:
             return self.avatar.url
         return '/static/images/default-avatar.png'
+    
+    def generate_verification_token(self):
+        """生成邮箱验证令牌"""
+        token = get_random_string(32)
+        EmailVerification.objects.filter(user=self).delete()  # 删除旧的验证记录
+        EmailVerification.objects.create(
+            user=self,
+            token=token,
+            expires_at=timezone.now() + timedelta(hours=24)
+        )
+        return token
 
 
 class UserProfile(models.Model):
@@ -102,3 +117,47 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return f'{self.user.username}的资料'
+
+
+class EmailVerification(models.Model):
+    """邮箱验证模型"""
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='email_verifications',
+        verbose_name=_('用户')
+    )
+    token = models.CharField(_('验证令牌'), max_length=32, unique=True)
+    expires_at = models.DateTimeField(_('过期时间'))
+    created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
+    
+    class Meta:
+        db_table = 'email_verifications'
+        verbose_name = _('邮箱验证')
+        verbose_name_plural = _('邮箱验证')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f'{self.user.email}的验证令牌'
+    
+    def is_expired(self):
+        """检查令牌是否过期"""
+        return timezone.now() > self.expires_at
+    
+    @classmethod
+    def verify_token(cls, token):
+        """验证令牌"""
+        try:
+            verification = cls.objects.get(token=token)
+            if verification.is_expired():
+                verification.delete()
+                return None, '验证链接已过期'
+            
+            user = verification.user
+            user.email_verified = True
+            user.save()
+            verification.delete()
+            return user, '邮箱验证成功'
+        except cls.DoesNotExist:
+            return None, '无效的验证链接'

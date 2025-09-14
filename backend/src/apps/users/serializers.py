@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import User, UserProfile
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import User, UserProfile, EmailVerification
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -168,3 +170,66 @@ class UserListSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return request.user.following.filter(following=obj).exists()
         return False
+
+
+class EmailVerificationSerializer(serializers.Serializer):
+    """邮箱验证序列化器"""
+    
+    email = serializers.EmailField()
+    
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+            if user.email_verified:
+                raise serializers.ValidationError('邮箱已经验证过了')
+            return value
+        except User.DoesNotExist:
+            raise serializers.ValidationError('用户不存在')
+    
+    def save(self):
+        email = self.validated_data['email']
+        user = User.objects.get(email=email)
+        token = user.generate_verification_token()
+        
+        # 发送验证邮件
+        verification_url = f"{settings.FRONTEND_URL}/verify-email/{token}"
+        subject = 'ASocialSys - 邮箱验证'
+        message = f'''
+        您好 {user.username}，
+        
+        感谢您注册ASocialSys！请点击下面的链接验证您的邮箱：
+        
+        {verification_url}
+        
+        此链接将在24小时后过期。
+        
+        如果您没有注册ASocialSys账户，请忽略此邮件。
+        
+        ASocialSys团队
+        '''
+        
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+        
+        return user
+
+
+class EmailVerificationConfirmSerializer(serializers.Serializer):
+    """邮箱验证确认序列化器"""
+    
+    token = serializers.CharField(max_length=32)
+    
+    def validate_token(self, value):
+        user, message = EmailVerification.verify_token(value)
+        if not user:
+            raise serializers.ValidationError(message)
+        self.user = user
+        return value
+    
+    def save(self):
+        return self.user
