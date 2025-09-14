@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .debug-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        <h1>ASocialSys 调试页面</h1>
+        <p>当前时间: <span id="time"></span></p>
+        <p>屏幕尺寸: <span id="screen"></span></p>
+        <p>窗口尺寸: <span id="window"></span></p>
+        <p>用户代理: <span id="userAgent"></span></p>
+    </div>
+    
+    <div class="debug-info">
+        <h2>快速导航</h2>
+        <button class="button" onclick="window.open('http://localhost:3001/', '_blank')">打开主应用</button>
+        <button class="button" onclick="window.open('http://localhost:3001/login', '_blank')">打开登录页</button>
+        <button class="button" onclick="window.open('http://localhost:3001/register', '_blank')">打开注册页</button>
+    </div>
+    
+    <div class="debug-info">
+        <h2>问题排查</h2>
+        <p>如果页面元素显示过大，请检查:</p>
+        <ul>
+            <li>浏览器缩放级别 (Ctrl+0 重置)</li>
+            <li>CSS样式是否正确加载</li>
+            <li>Tailwind CSS是否正常工作</li>
+            <li>开发者工具中的元素尺寸</li>
+        </ul>
+    </div>
+    
+    <script>
+        function updateInfo() {
+            document.getElementById('time').textContent = new Date().toLocaleString();
+            document.getElementById('screen').textContent = `${screen.width}x${screen.height}`;
+            document.getElementById('window').textContent = `${window.innerWidth}x${window.innerHeight}`;
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+        }
+        
+        updateInfo();
+        setInterval(updateInfo, 1000);
+    </script>
+</body>
+</html>

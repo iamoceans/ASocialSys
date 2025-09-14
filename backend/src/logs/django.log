@@ -1,0 +1,12 @@
+ERROR 2025-09-15 00:43:50,706 signals 200284 222620 创建系统通知失败: Notification() got unexpected keyword arguments: 'action_url'
+INFO 2025-09-15 00:43:50,707 signals 200284 222620 为新用户 admin 创建欢迎通知
+INFO 2025-09-15 00:43:57,611 autoreload 227840 229972 Watching for file changes with StatReloader
+INFO 2025-09-15 00:44:49,204 autoreload 227532 227944 Watching for file changes with StatReloader
+WARNING 2025-09-15 00:44:53,289 log 227532 223928 Not Found: /
+WARNING 2025-09-15 00:44:53,371 log 227532 223928 Not Found: /@vite/client
+WARNING 2025-09-15 00:44:55,979 log 227532 225032 Not Found: /
+WARNING 2025-09-15 00:44:56,090 log 227532 218220 Not Found: /@vite/client
+WARNING 2025-09-15 00:45:30,605 log 227532 227912 Not Found: /
+WARNING 2025-09-15 00:45:31,538 log 227532 222572 Not Found: /favicon.ico
+WARNING 2025-09-15 00:45:34,161 log 227532 222572 Not Found: /
+WARNING 2025-09-15 00:45:36,392 log 227532 222572 Not Found: /

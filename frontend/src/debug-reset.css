@@ -1,0 +1,67 @@
+/* 临时调试CSS - 重置可能导致问题的样式 */
+
+/* 确保所有元素使用正常的box-sizing */
+* {
+  box-sizing: border-box !important;
+}
+
+/* 重置可能的transform或scale */
+* {
+  transform: none !important;
+  scale: none !important;
+}
+
+/* 确保容器不会过大 */
+.min-h-screen {
+  min-height: 100vh !important;
+  max-height: none !important;
+}
+
+/* 确保Logo组件尺寸正常 */
+[class*="w-"] {
+  max-width: 100% !important;
+}
+
+[class*="h-"] {
+  max-height: 100% !important;
+}
+
+/* 确保SVG图标尺寸正常 */
+svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* 调试边框 - 帮助识别过大的元素 */
+.debug-borders * {
+  border: 1px solid red !important;
+}
+
+/* 确保文本尺寸正常 */
+.text-3xl {
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
+
+/* 确保按钮尺寸正常 */
+button {
+  max-width: 100% !important;
+}
+
+/* 确保输入框尺寸正常 */
+input, textarea {
+  max-width: 100% !important;
+}
+
+/* 确保容器宽度限制 */
+.max-w-md {
+  max-width: 28rem !important;
+}
+
+.max-w-4xl {
+  max-width: 56rem !important;
+}
+
+.max-w-6xl {
+  max-width: 72rem !important;
+}
